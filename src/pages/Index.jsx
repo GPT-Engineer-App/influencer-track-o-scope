@@ -30,13 +30,13 @@ const fetchChartData = async () => {
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('all');
+  const [selectedCountry, setSelectedCountry] = useState('');
   const { data: influencers = [] } = useQuery({ queryKey: ['influencers'], queryFn: fetchInfluencers });
   const { data: chartData = [] } = useQuery({ queryKey: ['chartData'], queryFn: fetchChartData });
 
   const filteredInfluencers = influencers.filter(influencer =>
     influencer.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (selectedCountry === 'all' || influencer.country === selectedCountry)
+    (selectedCountry === '' || influencer.country === selectedCountry)
   );
 
   const countries = [...new Set(influencers.map(inf => inf.country))];
@@ -112,7 +112,7 @@ const Index = () => {
                 <SelectValue placeholder="Select country" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Countries</SelectItem>
+                <SelectItem value="">All Countries</SelectItem>
                 {countries.map(country => (
                   <SelectItem key={country} value={country}>{country}</SelectItem>
                 ))}
