@@ -4,15 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const fetchInfluencers = async () => {
   // Simulated API call
   return [
-    { id: 1, name: 'John Doe', followers: 100000, engagement: 5.2, posts: 500 },
-    { id: 2, name: 'Jane Smith', followers: 250000, engagement: 4.8, posts: 750 },
-    { id: 3, name: 'Bob Johnson', followers: 50000, engagement: 6.1, posts: 300 },
-    { id: 4, name: 'Alice Brown', followers: 500000, engagement: 3.9, posts: 1000 },
-    { id: 5, name: 'Charlie Davis', followers: 75000, engagement: 5.5, posts: 400 },
+    { id: 1, name: 'John Doe', followers: 100000, engagement: 5.2, posts: 500, country: 'USA' },
+    { id: 2, name: 'Jane Smith', followers: 250000, engagement: 4.8, posts: 750, country: 'UK' },
+    { id: 3, name: 'Bob Johnson', followers: 50000, engagement: 6.1, posts: 300, country: 'Canada' },
+    { id: 4, name: 'Alice Brown', followers: 500000, engagement: 3.9, posts: 1000, country: 'Australia' },
+    { id: 5, name: 'Charlie Davis', followers: 75000, engagement: 5.5, posts: 400, country: 'USA' },
   ];
 };
 
@@ -29,12 +30,16 @@ const fetchChartData = async () => {
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
   const { data: influencers = [] } = useQuery({ queryKey: ['influencers'], queryFn: fetchInfluencers });
   const { data: chartData = [] } = useQuery({ queryKey: ['chartData'], queryFn: fetchChartData });
 
   const filteredInfluencers = influencers.filter(influencer =>
-    influencer.name.toLowerCase().includes(searchTerm.toLowerCase())
+    influencer.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (selectedCountry === '' || influencer.country === selectedCountry)
   );
+
+  const countries = [...new Set(influencers.map(inf => inf.country))];
 
   return (
     <div className="container mx-auto p-4">
@@ -95,12 +100,25 @@ const Index = () => {
           <CardTitle>Influencer List</CardTitle>
         </CardHeader>
         <CardContent>
-          <Input
-            placeholder="Search influencers..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="mb-4"
-          />
+          <div className="flex gap-4 mb-4">
+            <Input
+              placeholder="Search influencers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-grow"
+            />
+            <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Countries</SelectItem>
+                {countries.map(country => (
+                  <SelectItem key={country} value={country}>{country}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -108,6 +126,7 @@ const Index = () => {
                 <TableHead>Followers</TableHead>
                 <TableHead>Engagement Rate</TableHead>
                 <TableHead>Posts</TableHead>
+                <TableHead>Country</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -117,6 +136,7 @@ const Index = () => {
                   <TableCell>{influencer.followers.toLocaleString()}</TableCell>
                   <TableCell>{influencer.engagement}%</TableCell>
                   <TableCell>{influencer.posts}</TableCell>
+                  <TableCell>{influencer.country}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
